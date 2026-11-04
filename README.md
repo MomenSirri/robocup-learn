@@ -27,3 +27,9 @@ Optional end-to-end gesture smoke test (needs Playwright and `npm run preview` r
 ```bash
 node scripts/smoke-gestures.cjs
 ```
+
+Build a single self-contained HTML file (for hosting the app as one page):
+
+```bash
+npm run build && node scripts/single-file.mjs dist/cfop-coach.html
+```
