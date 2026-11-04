@@ -26,6 +26,16 @@ export function StageMap({ stage, nav }: { stage: Stage; nav: Nav }) {
           ))}
         </div>
       </div>
+      {stage === 'pll' && (
+        <button className="tool-card" onClick={() => nav.push({ name: 'pll-id' })}>
+          <span className="glyph">?</span>
+          <div>
+            <div className="family-title">Which PLL do I have?</div>
+            <div className="family-idea">Tap in the colours from your real cube and get the case, the setup turn and the algorithm.</div>
+          </div>
+          <span className="chev">›</span>
+        </button>
+      )}
       {fams.map((f) => (
         <section key={f.id} className="family">
           <div className="family-head">

@@ -98,7 +98,7 @@ export const PLL: LLDef[] = [
   { n: 'Ra', family: 'pll-adjacent', alg: "R U' R' U' R U R D R' U' R D' R' U2 R'" },
   { n: 'Rb', family: 'pll-adjacent', alg: "R2 F R U R U' R' F' R U2 R' U2 R" },
   { n: 'Y', family: 'pll-diagonal', alg: "F R U' R' U' R U R' F' R U R' U' R' F R F'" },
-  { n: 'V', family: 'pll-diagonal', alg: "R' U R' U' y R' F' R2 U' R' U R' F R F" },
+  { n: 'V', family: 'pll-diagonal', alg: "R' U R' U' R D' R' D R' U D' R2 U' R2 D R2" },
   { n: 'Na', family: 'pll-diagonal', alg: "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'" },
   { n: 'Nb', family: 'pll-diagonal', alg: "R' U R U' R' F' U' F R U R' F R' F' R U' R" },
   { n: 'Ga', family: 'pll-g', alg: "R2 U R' U R' U' R U' R2 U' D R' U R D'" },

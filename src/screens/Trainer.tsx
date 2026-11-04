@@ -99,7 +99,7 @@ export function Trainer({ nav }: { nav: Nav }) {
       <TopBar
         title={<><div className="tb-main">Recognition</div><div className="tb-sub">{session.n ? `${session.ok}/${session.n} · avg ${(avgMs / 1000).toFixed(1)}s` : 'Spot it fast'}</div></>}
         onBack={nav.canBack ? nav.back : undefined}
-        right={<button className="chip" onClick={() => nav.tab('stats')}>Stats</button>}
+        right={pool === 'pll' ? <button className="chip" onClick={() => nav.push({ name: 'pll-id' })}>Which PLL?</button> : <button className="chip" onClick={() => nav.tab('stats')}>Stats</button>}
       />
       <div className="trainer-config">
         <Segmented<Pool> value={pool} onChange={setPool} options={[{ id: 'f2l', label: 'F2L' }, { id: 'oll', label: 'OLL' }, { id: 'pll', label: 'PLL' }, { id: 'all', label: 'Mix' }]} />

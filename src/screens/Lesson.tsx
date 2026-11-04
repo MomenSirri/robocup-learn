@@ -126,6 +126,7 @@ function Recognise({ view, inst, onAngle, nav }: { view: CubeView; inst: CaseIns
         <button className="chip" onClick={playSetup} disabled={settingUp}>{settingUp ? 'Playing…' : '▶ Show'}</button>
       </div>
       <div className="note">Hold the cube with yellow on top and green in front, then do these moves on a solved cube to get this case.</div>
+      {inst.def.stage === 'pll' && <button className="chip" onClick={() => nav.push({ name: 'pll-id' })}>? Which PLL do I have on my cube</button>}
       <div className="row buttons">
         <button className={'chip' + (ghost ? ' on' : '')} onClick={() => setGhost(!ghost)}>◌ Where they go</button>
         <button className="chip" onClick={onAngle}>⟳ Another angle</button>

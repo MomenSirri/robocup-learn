@@ -5,6 +5,7 @@ import { Lesson } from './screens/Lesson';
 import { Trainer } from './screens/Trainer';
 import { Discover } from './screens/Discover';
 import { Stats } from './screens/Stats';
+import { PllIdentify } from './screens/PllIdentify';
 import { Stage } from './cube/analysis';
 
 export type Route =
@@ -13,7 +14,8 @@ export type Route =
   | { name: 'lesson'; caseId: string }
   | { name: 'train' }
   | { name: 'discover'; caseId?: string }
-  | { name: 'stats' };
+  | { name: 'stats' }
+  | { name: 'pll-id' };
 
 export type Tab = 'learn' | 'train' | 'discover' | 'stats';
 
@@ -52,6 +54,7 @@ export function App() {
     case 'train': screen = <Trainer nav={nav} />; break;
     case 'discover': screen = <Discover nav={nav} caseId={route.caseId} />; break;
     case 'stats': screen = <Stats nav={nav} />; break;
+    case 'pll-id': screen = <PllIdentify nav={nav} />; break;
   }
 
   const tabs: { id: Tab; label: string; icon: string }[] = [

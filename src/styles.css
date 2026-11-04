@@ -209,3 +209,23 @@ button:disabled { cursor: default; }
 .pill { background: #10131a; border-radius: 99px; padding: 1px 8px; font-size: 11px; color: var(--muted); margin-left: auto; }
 
 .setup { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 12px; padding: 8px 10px; }
+
+/* PLL identifier */
+.tool-card { margin: 4px 12px 0; display: flex; gap: 12px; align-items: center; text-align: left; padding: 14px; border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+.tool-card > div { flex: 1; }
+.pll-input { width: 100%; max-width: 340px; align-self: center; touch-action: manipulation; }
+.pll-input .tap { cursor: pointer; transition: fill 0.15s; }
+.svg-label { fill: var(--muted); font-size: 9px; letter-spacing: 0.1em; font-weight: 600; }
+.palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.swatch { border-radius: 12px; padding: 12px 0; font-size: 11px; font-weight: 700; color: #0b0d12; }
+.swatch.clear { background: var(--card); color: var(--muted); border: 1px solid var(--line); }
+.cand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.cand { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; background: #10131a; border-radius: 12px; padding: 6px 4px; }
+.answer { display: flex; flex-direction: column; gap: 10px; }
+.answer-head { display: flex; gap: 14px; align-items: center; }
+.answer-name { font-size: 24px; font-weight: 800; color: var(--accent); }
+.answer-steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.guide-step { font-size: 14px; }
+.guide-branch { display: grid; gap: 8px; font-size: 13px; }
+.guide-branch > div { background: #10131a; border-radius: 12px; padding: 10px; border-left: 3px solid var(--accent); }
