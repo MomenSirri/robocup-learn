@@ -39,6 +39,8 @@ jobs:
           npx cap add android
           # lock to portrait, like the app's design
           sed -i 's/<activity /<activity android:screenOrientation="portrait" /' android/app/src/main/AndroidManifest.xml
+          # cube launcher icons (all densities, round + adaptive) from assets/
+          npx capacitor-assets generate --android --iconBackgroundColor '#0b0d12' --iconBackgroundColorDark '#0b0d12' --splashBackgroundColor '#0b0d12' --splashBackgroundColorDark '#0b0d12'
           npx cap sync android
 
       - name: Build APK
