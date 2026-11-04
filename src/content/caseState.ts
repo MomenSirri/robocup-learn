@@ -1,6 +1,7 @@
 import {
   CubeState, Move, solvedState, applyAlg, parseAlg, invertAlg, randomScramble,
   CROSS_EDGES, LAST_LAYER, FIRST_TWO_LAYERS, F2L_SLOTS, isCubieSolved, frame,
+  stickerDir, facelets, faceletAt, Face, Vec,
 } from '../cube/cube';
 import { simplify, Stage, f2lFeatures, describeF2L } from '../cube/analysis';
 import { solveCross } from '../cube/crossSolver';
@@ -59,5 +60,40 @@ export function stickerMask(stage: Stage | 'free'): (cubieId: string, colour: st
 
 export function recognitionCue(inst: CaseInstance): string[] {
   if (inst.def.stage === 'f2l') return describeF2L(f2lFeatures(inst.start));
-  return [inst.def.cue];
+  const out = inst.def.cue ? [inst.def.cue] : [];
+  if (inst.def.stage === 'oll') out.push(...ollCue(inst.start));
+  if (inst.def.stage === 'pll') out.push(...pllCue(inst.start));
+  return out;
+}
+
+function ollCue(s: CubeState): string[] {
+  const fr = frame(s);
+  const up = (id: string) => stickerDir(s, id, 'U', fr)[1] === 1;
+  const edges = LAST_LAYER.filter((id) => id.length === 2 && up(id)).length;
+  const corners = LAST_LAYER.filter((id) => id.length === 3 && up(id)).length;
+  return [`Yellow on top: ${edges}/4 edges · ${corners}/4 corners`];
+}
+
+const SIDES: { face: Face; cells: Vec[] }[] = [
+  { face: 'F', cells: [[-1, 1, 1], [0, 1, 1], [1, 1, 1]] },
+  { face: 'R', cells: [[1, 1, 1], [1, 1, 0], [1, 1, -1]] },
+  { face: 'B', cells: [[1, 1, -1], [0, 1, -1], [-1, 1, -1]] },
+  { face: 'L', cells: [[-1, 1, -1], [-1, 1, 0], [-1, 1, 1]] },
+];
+
+function pllCue(s: CubeState): string[] {
+  const f = facelets(s);
+  let headlights = 0;
+  let bars = 0;
+  let blocks = 0;
+  for (const side of SIDES) {
+    const [a, b, c] = side.cells.map((p) => faceletAt(f, p, side.face));
+    if (a === c) headlights++;
+    if (a === b && b === c) bars++;
+    else if (a === b || b === c) blocks++;
+  }
+  const out = [headlights === 0 ? 'No headlights on any side' : headlights === 4 ? 'Headlights on all 4 sides' : `Headlights on ${headlights} side${headlights > 1 ? 's' : ''}`];
+  if (bars) out.push(`${bars} fully solved side${bars > 1 ? 's' : ''}`);
+  else if (blocks) out.push(`${blocks} two-colour block${blocks > 1 ? 's' : ''} (1×2)`);
+  return out;
 }

@@ -131,7 +131,7 @@ Key decisions:
 ### Phase 1: first functional version ✅ (this commit)
 - [x] Cube engine, notation, inverse, simplify, scrambles, frame-relative checks
 - [x] Optimal cross solver
-- [x] Concept-grouped curriculum: 1 cross, 29 F2L, 16 OLL, 12 PLL cases in 13 families, with relations
+- [x] Concept-grouped curriculum: cross plus the full sets: 41 F2L, 57 OLL, 21 PLL, with automatic inverse/mirror relations (F2L algorithms not hand-written are generated from inserts by `scripts/gen-f2l.ts`)
 - [x] 3D cube: orbit, swipe-to-turn, animated moves, speed, step back/forward, highlight, focus/dim, ghosts, piece paths, move arrows
 - [x] Lesson flow: See / Why / Predict / Solve / Drill
 - [x] Progressive 4-level hints
@@ -141,7 +141,7 @@ Key decisions:
 - [x] PWA shell, unit tests (cube model, content validity, analysis)
 
 ### Phase 2: deeper understanding
-- Full F2L (all 41 cases + back slots via y / alternative slot algs), full OLL (57) and PLL (21), each placed in a family
+- Back-slot F2L variants (solving into the other three slots without rotating)
 - "Setup move" lessons: show explicitly how a U/y setup turns an unfamiliar case into a known one (a side-by-side transform animation)
 - Pair-centric camera: auto-orbit so the pair being built stays in view
 - Live partial-turn gestures (the layer follows the finger) and haptics

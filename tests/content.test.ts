@@ -66,3 +66,29 @@ describe('setup moves', () => {
       }
   });
 });
+
+describe('complete case sets', () => {
+  it('covers all 41 F2L, 57 OLL and 21 PLL cases exactly once', async () => {
+    const { caseKeyOfAlg } = await import('../src/content/classify');
+    for (const [stage, n] of [['f2l', 41], ['oll', 57], ['pll', 21]] as const) {
+      const list = CASES.filter((c) => c.stage === stage);
+      expect(list.length, stage).toBe(n);
+      const keys = new Set(list.map((c) => caseKeyOfAlg(stage, parseAlg(c.alg))));
+      expect(keys.size, stage + ' distinct').toBe(n);
+    }
+  });
+  it('alternative algorithms solve the same case', async () => {
+    const { caseKeyOfAlg } = await import('../src/content/classify');
+    for (const c of CASES.filter((x) => x.alts)) for (const a of c.alts!) expect(caseKeyOfAlg(c.stage, parseAlg(a))).toBe(caseKeyOfAlg(c.stage, parseAlg(c.alg)));
+  });
+  it('mirrored algorithms keep the stage valid', async () => {
+    const { mirrorFR, mirrorLR } = await import('../src/content/classify');
+    const { invertAlg, solvedState: solved } = await import('../src/cube/cube');
+    for (const c of CASES.filter((x) => x.alg && x.stage !== 'cross')) {
+      const m = c.stage === 'f2l' ? mirrorFR(parseAlg(c.alg)) : mirrorLR(parseAlg(c.alg));
+      const s = applyAlg(solved(), invertAlg(m));
+      const keep = c.stage === 'f2l' ? FIRST_TWO_LAYERS.filter((id) => id !== 'DFR' && id !== 'FR') : FIRST_TWO_LAYERS;
+      expect(allSolved(s, keep), c.id).toBe(true);
+    }
+  });
+});

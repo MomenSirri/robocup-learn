@@ -5,7 +5,11 @@
  * cube, so cases and solutions are consistent by construction (and tests
  * verify each algorithm only touches what its stage allows).
  */
-import { Stage } from '../cube/analysis';
+import { Stage, chunkAlg, f2lFeatures } from '../cube/analysis';
+import { parseAlg, applyAlg, solvedState, invertAlg, algToString } from '../cube/cube';
+import { F2L_ALGS } from './f2l.generated';
+import { OLL, PLL } from './llAlgs';
+import { caseKeyOfAlg, mirrorFR, mirrorLR } from './classify';
 
 export interface Family {
   id: string;
@@ -78,41 +82,28 @@ export const FAMILIES: Family[] = [
     idea: 'Take them out as one unit, fix them on top, put them back.',
     steps: ['One trigger extracts both pieces', 'U moves rebuild the pair correctly', 'Insert'],
   },
-  // ---------------- OLL
-  {
-    id: 'oll-edges', stage: 'oll', glyph: '✚', title: 'Edge flips (yellow cross)',
-    idea: 'F (sexy) F′ flips two edges. The wide version f flips a different pair.',
-    steps: ['Count yellow edges on top: line, L, or dot', 'Line → F R U R′ U′ F′', 'L → wide f version', 'Dot → both, one after another'],
-  },
-  {
-    id: 'oll-sune', stage: 'oll', glyph: '↻', title: 'The Sune family',
-    idea: 'Every corner-only OLL is Sune-based: Sune twists three corners at once.',
-    steps: ['Edges already form a cross', 'Count oriented corners: 0, 1 or 2', 'Look where the side yellow stickers face', 'Pick the Sune variation'],
-  },
-  {
-    id: 'oll-triggers', stage: 'oll', glyph: '⚒', title: 'Trigger combos',
-    idea: 'Many OLLs are two triggers glued together — learn the triggers, not the letters.',
-    steps: ['Find the trigger chunks in the algorithm', 'Sexy + sledgehammer, or a "fat" Sune with r', 'Each chunk has a clear job'],
-  },
+  // ---------------- OLL (shape families)
+  { id: 'oll-sune', stage: 'oll', glyph: '↻', title: 'Cross done: the Sune family', idea: 'Edges already form a cross. All 7 cases twist corners, and all are built from Sune.', steps: ['Count corners facing up: 0, 1 or 2', 'Look where the side yellow stickers point', '1 up → Sune or Antisune; 0 → H or Pi; 2 → Headlights, Chameleon or Bowtie'] },
+  { id: 'oll-corners-done', stage: 'oll', glyph: '◇', title: 'Corners done, edges not', idea: 'Only two edges need flipping. The M slice does that job.', steps: ['All four corners are yellow', 'Two edges face sideways', 'Sexy move + M′ flips them'] },
+  { id: 'oll-tc', stage: 'oll', glyph: '⊤', title: 'T and C shapes', idea: 'Short trigger pairs: F-sexy-F′ or sexy + sledgehammer.', steps: ['Find the T or C of yellow', 'T: bar across the front/back', 'C: open side faces you or the right'] },
+  { id: 'oll-p', stage: 'oll', glyph: 'P', title: 'P shapes', idea: 'A 2×2 block plus one edge: the wide-f and F-trigger family.', steps: ['Find the yellow block', 'The stem shows the direction', 'f-sexy-f′ and its mirrors'] },
+  { id: 'oll-lightning', stage: 'oll', glyph: 'ϟ', title: 'Squares & lightning', idea: 'Wide (r) versions of Sune: corners twist like Sune while the M slice flips edges.', steps: ['A 2×2 square or a zig-zag bolt', 'Same rhythm as Sune, with r instead of R', 'Mirrors use l or r′'] },
+  { id: 'oll-fish', stage: 'oll', glyph: '◢', title: 'Fish shapes', idea: 'One corner up plus a diagonal of edges: sledgehammer combos.', steps: ['Find the fish head (corner) and tail', 'Sexy + sledge or hedge + sexy'] },
+  { id: 'oll-knight', stage: 'oll', glyph: '♞', title: 'Knight moves', idea: 'An L-jump of yellow like a chess knight. Wide moves and sexy triggers.', steps: ['Two separate yellow bits', 'Spot which side the "jump" goes', 'Wide-r inserts restore F2L'] },
+  { id: 'oll-awkward', stage: 'oll', glyph: '⚠', title: 'Awkward shapes', idea: 'These mix two simpler OLLs: a Sune-like half and an F-trigger half.', steps: ['Line of two + corner', 'First half sets up a known OLL', 'Second half finishes it'] },
+  { id: 'oll-w', stage: 'oll', glyph: 'W', title: 'W shapes', idea: 'A staircase of yellow. Sune-like opening, sledgehammer finish.', steps: ['Find the staircase', 'Run the trigger sequence'] },
+  { id: 'oll-small-l', stage: 'oll', glyph: '⌐', title: 'Small L shapes', idea: 'An L of edges with corners scattered. Double triggers (sexy twice) or wide r swings.', steps: ['L of two edges', 'Count where corners face', 'Repeat the trigger twice'] },
+  { id: 'oll-line', stage: 'oll', glyph: '━', title: 'Line shapes', idea: 'A straight line of yellow. Repeat a trigger inside f … f′.', steps: ['Hold the line horizontally', 'f + double sexy + f′, or a Sune-based variant'] },
+  { id: 'oll-dot', stage: 'oll', glyph: '•', title: 'Dot shapes', idea: 'No edges are oriented. These are two OLLs stuck together: an edge flip, then a corner OLL.', steps: ['Only the centre is yellow', 'Look at corners to choose the case', 'Usually F-sexy-F′ + f-sexy-f′'] },
   // ---------------- PLL
-  {
-    id: 'pll-edges', stage: 'pll', glyph: '⟲', title: 'Edges only',
-    idea: 'Corners are already solved; only edges cycle or swap.',
-    steps: ['All four corners form solid "headlights"', 'One solved side → U perm (3-cycle)', 'No solved side → H or Z (swaps)'],
-  },
-  {
-    id: 'pll-corner-swap', stage: 'pll', glyph: '⇆', title: 'Adjacent corner swap',
-    idea: 'One side has headlights: two neighbouring corners trade places (plus edges).',
-    steps: ['Find the single pair of headlights', 'Put it on the left (T) or the back (J)', 'Run the swap'],
-  },
-  {
-    id: 'pll-corner-cycle', stage: 'pll', glyph: '△', title: 'Corner 3-cycles & diagonals',
-    idea: 'Three corners rotate (A perms) or two diagonal corners swap (Y, V).',
-    steps: ['Headlights on one side + no solid edge block → A perm', 'No headlights → diagonal swap', 'Commutators: move – swap – undo'],
-  },
+  { id: 'pll-edges', stage: 'pll', glyph: '⟲', title: 'Edges only', idea: 'Corners are already solved; only edges cycle or swap.', steps: ['All four sides show headlights', 'One solid side → U perm (3-cycle)', 'No solid side → H or Z (swaps)'] },
+  { id: 'pll-corners', stage: 'pll', glyph: '△', title: 'Corners only', idea: 'Edges are solved; corners cycle (A) or swap twice (E). These are commutators.', steps: ['Edges match their centres', 'One side with headlights → A perm', 'No headlights → E perm'] },
+  { id: 'pll-adjacent', stage: 'pll', glyph: '⇆', title: 'Adjacent corner swap', idea: 'Two neighbouring corners trade places, plus an edge swap.', steps: ['Exactly one side has headlights', 'Look at the edges between them', 'T / F / J / R'] },
+  { id: 'pll-diagonal', stage: 'pll', glyph: '⤡', title: 'Diagonal corner swap', idea: 'No headlights anywhere: two opposite corners swap.', steps: ['No side has matching corners', 'Find the solid 1×2 or 1×3 blocks', 'Y / V / N'] },
+  { id: 'pll-g', stage: 'pll', glyph: 'G', title: 'G perms', idea: 'Corners and edges both 3-cycle. Find the solid 2×1 block and the headlights.', steps: ['One side has headlights', 'Find the 1×2 block', 'Its position tells Ga/Gb/Gc/Gd'] },
 ];
 
-export const CASES: CaseDef[] = [
+const BASE_CASES: CaseDef[] = [
   // ---------------- cross
   { id: 'cross-1', stage: 'cross', family: 'cross-plan', name: 'Random cross', alg: '', cue: 'White edges — where are they relative to each other?', why: 'Placing edges that are already next to each other first saves moves.' },
 
@@ -152,43 +143,104 @@ export const CASES: CaseDef[] = [
   { id: 'f2l-ein-4', stage: 'f2l', family: 'f2l-edge-in', name: 'Edge in · white up', alg: "R U R' U' R U R' U' R U R'", cue: 'Edge solved, corner on top with white up.', why: 'Each sexy move twists the corner one step; the third insert finishes.' },
 
   // ---------------- F2L both in slot
-  { id: 'f2l-both-1', stage: 'f2l', family: 'f2l-both-in', name: 'Both in · corner twisted A', alg: "R U' R' U' R U R' U2 R U' R'", cue: 'Edge right, corner twisted.', why: 'Lift the pair, U moves twist it right, insert.' },
+  { id: 'f2l-both-1', stage: 'f2l', family: 'f2l-both-in', name: 'Both in · corner twisted A', alg: "R U' R' U' R U R' U2 R U' R'", alts: ["R U R' U' R U2 R' U' R U R'"], cue: 'Edge right, corner twisted.', why: 'Lift the pair, U moves twist it right, insert.' },
   { id: 'f2l-both-2', stage: 'f2l', family: 'f2l-both-in', name: 'Both in · corner twisted B', alg: "R U' R' U R U2 R' U R U' R'", cue: 'Edge right, corner twisted the other way.', why: 'Same plan, mirrored timing.' },
   { id: 'f2l-both-3', stage: 'f2l', family: 'f2l-both-in', name: 'Both in · edge flipped', alg: "R U2 R' U R U2 R' U F' U' F", cue: 'Corner solved, edge flipped.', why: 'Two R U2 R′ pull both out and re-pair; finish from the front.' },
-  { id: 'f2l-both-4', stage: 'f2l', family: 'f2l-both-in', name: 'Both in · all wrong', alg: "R U R' U' R U2 R' U' R U R'", cue: 'Edge solved, corner twisted in the slot.', why: 'Sexy extracts, U2 rebuilds the pair, insert.' },
 
-  // ---------------- OLL
-  { id: 'oll-line', stage: 'oll', family: 'oll-edges', name: 'Line', alg: "F R U R' U' F'", cue: 'Two opposite yellow edges (a line).', why: 'F tilts the line\'s edges into the R layer; the sexy move flips them; F′ brings them back oriented.', related: [{ id: 'oll-l', how: 'Same moves with a wide f' }, { id: 'oll-dot', how: 'Dot = line + L' }] },
-  { id: 'oll-l', stage: 'oll', family: 'oll-edges', name: 'L shape', alg: "f R U R' U' f'", cue: 'Two adjacent yellow edges (an L).', why: 'Wide f also moves the middle layer, so a different pair of edges gets flipped.', related: [{ id: 'oll-line', how: 'Regular F version' }] },
-  { id: 'oll-dot', stage: 'oll', family: 'oll-edges', name: 'Dot', alg: "F R U R' U' F' f R U R' U' f'", cue: 'No yellow edges on top.', why: 'Line algorithm creates an L, the L algorithm finishes the cross.', related: [{ id: 'oll-line', how: 'First half' }, { id: 'oll-l', how: 'Second half' }] },
-  { id: 'oll-sune', stage: 'oll', family: 'oll-sune', name: 'Sune', alg: "R U R' U R U2 R'", cue: 'One corner up (a fish); the others face one way.', why: 'R U R′ U carries a corner around; R U2 R′ returns it — three corners twist together.', related: [{ id: 'oll-antisune', how: 'Inverse' }, { id: 'oll-fat-sune', how: 'Wide r version also flips edges' }] },
-  { id: 'oll-antisune', stage: 'oll', family: 'oll-sune', name: 'Antisune', alg: "R U2 R' U' R U' R'", cue: 'Fish pointing the other way.', why: 'Sune played backwards — corners twist the opposite direction.', related: [{ id: 'oll-sune', how: 'Inverse' }] },
-  { id: 'oll-h', stage: 'oll', family: 'oll-sune', name: 'H (double headlights)', alg: "R U R' U R U' R' U R U2 R'", cue: 'No corners up; headlights on two opposite sides.', why: 'It is a Sune with an extra R U′ R′ U inside — twists all four corners.', related: [{ id: 'oll-sune', how: 'Extended Sune' }] },
-  { id: 'oll-pi', stage: 'oll', family: 'oll-sune', name: 'Pi', alg: "R U2 R2 U' R2 U' R2 U2 R", cue: 'No corners up; one side has headlights, the opposite side does not.', why: 'R2 moves swing two corners at once — a compact double Sune.' },
-  { id: 'oll-u', stage: 'oll', family: 'oll-sune', name: 'Headlights (U)', alg: "R2 D R' U2 R D' R' U2 R'", cue: 'Two neighbouring corners up, headlights opposite them.', why: 'D moves hide the corner below while U2 swings the others.' },
-  { id: 'oll-t', stage: 'oll', family: 'oll-sune', name: 'Chameleon (T)', alg: "r U R' U' r' F R F'", cue: 'Two neighbouring corners up, side stickers facing out on one side.', why: 'Wide sexy move then sledgehammer — two triggers.', related: [{ id: 'oll-bowtie', how: 'Same pieces, different order' }] },
-  { id: 'oll-bowtie', stage: 'oll', family: 'oll-sune', name: 'Bowtie (L)', alg: "F' r U R' U' r' F R", cue: 'Two diagonal corners up.', why: 'A conjugated version of the chameleon (F′ … F wraps it).', related: [{ id: 'oll-t', how: 'Shares the r U R′ U′ r′ core' }] },
-  { id: 'oll-sexy-sledge', stage: 'oll', family: 'oll-triggers', name: 'Sexy + Sledge', alg: "R U R' U' R' F R F'", cue: 'T-ish shape with an L of edges.', why: 'Sexy move breaks a pair, sledgehammer re-forms it oriented.', related: [{ id: 'oll-hedge-sexy', how: 'The reverse combo' }] },
-  { id: 'oll-hedge-sexy', stage: 'oll', family: 'oll-triggers', name: 'Hedge + Sexy', alg: "F R' F' R U R U' R'", cue: 'Mirror-ish shape with an L of edges.', why: 'Hedgeslammer then a sexy-like trigger: the same two tools in another order.', related: [{ id: 'oll-sexy-sledge', how: 'Reverse combo' }] },
-  { id: 'oll-p', stage: 'oll', family: 'oll-triggers', name: 'F reverse-sexy F′', alg: "F U R U' R' F'", cue: 'L of edges with a block of yellow.', why: 'Like the line algorithm, but reverse sexy inside.', related: [{ id: 'oll-line', how: 'Sexy vs reverse sexy' }] },
-  { id: 'oll-fat-sune', stage: 'oll', family: 'oll-triggers', name: 'Fat Sune', alg: "r U R' U R U2 r'", cue: 'Lightning bolt shape.', why: 'A Sune with wide r: corners twist like Sune, the M slice flips two edges.', related: [{ id: 'oll-sune', how: 'Same rhythm' }, { id: 'oll-fat-antisune', how: 'Mirror' }] },
-  { id: 'oll-fat-antisune', stage: 'oll', family: 'oll-triggers', name: 'Fat Antisune', alg: "r' U' R U' R' U2 r", cue: 'Lightning bolt, mirrored.', why: 'Left-leaning fat Sune.', related: [{ id: 'oll-fat-sune', how: 'Mirror' }] },
-  { id: 'oll-arrow', stage: 'oll', family: 'oll-triggers', name: 'Arrow (all corners done)', alg: "R U R' U' M' U R U' r'", cue: 'All corners up, two edges not.', why: 'Sexy then M′ flips the two edges through the middle layer; the rest restores.' },
-
-  // ---------------- PLL
-  { id: 'pll-ua', stage: 'pll', family: 'pll-edges', name: 'Ua', alg: "R U' R U R U R U' R' U' R2", cue: 'One solid side; three edges cycle.', why: 'R U R U moves drag three edges around while corners return home.', related: [{ id: 'pll-ub', how: 'Inverse direction' }] },
-  { id: 'pll-ub', stage: 'pll', family: 'pll-edges', name: 'Ub', alg: "R2 U R U R' U' R' U' R' U R'", cue: 'One solid side; edges cycle the other way.', why: 'Ua backwards.', related: [{ id: 'pll-ua', how: 'Inverse' }] },
-  { id: 'pll-h', stage: 'pll', family: 'pll-edges', name: 'H', alg: 'M2 U M2 U2 M2 U M2', cue: 'Every side shows the opposite edge colour.', why: 'M2 swaps two edges through the bottom; doing it twice with U turns swaps both pairs.', related: [{ id: 'pll-z', how: 'Same M2 swaps, adjacent pairs' }] },
-  { id: 'pll-z', stage: 'pll', family: 'pll-edges', name: 'Z', alg: "M' U M2 U M2 U M' U2 M2", cue: 'Edges swap with their neighbours.', why: 'M slice swaps edge pairs, U turns pick which ones.', related: [{ id: 'pll-h', how: 'Sibling' }] },
-  { id: 'pll-t', stage: 'pll', family: 'pll-corner-swap', name: 'T', alg: "R U R' U' R' F R2 U' R' U' R U R' F'", cue: 'Headlights on one side, a 2-colour bar opposite them.', why: 'Sexy move + sledgehammer pattern swaps two corners and two edges.', related: [{ id: 'pll-jb', how: 'Same corner swap, different edges' }, { id: 'oll-sexy-sledge', how: 'Starts with the same triggers' }] },
-  { id: 'pll-jb', stage: 'pll', family: 'pll-corner-swap', name: 'Jb', alg: "R U R' F' R U R' U' R' F R2 U' R'", cue: 'A 1×3 solid block on one side.', why: 'Swaps the same two corners as T but a different edge pair.', related: [{ id: 'pll-t', how: 'Close relative' }, { id: 'pll-ja', how: 'Mirror' }] },
-  { id: 'pll-ja', stage: 'pll', family: 'pll-corner-swap', name: 'Ja', alg: "R' U L' U2 R U' R' U2 R L", cue: 'Solid block on the other side.', why: 'Left-handed Jb using L moves.', related: [{ id: 'pll-jb', how: 'Mirror' }] },
-  { id: 'pll-aa', stage: 'pll', family: 'pll-corner-cycle', name: 'Aa', alg: "x R' U R' D2 R U' R' D2 R2 x'", cue: 'Headlights on one side, edges all solved.', why: 'A commutator: move a corner, swap through D2, undo — three corners rotate.', related: [{ id: 'pll-ab', how: 'Inverse' }] },
-  { id: 'pll-ab', stage: 'pll', family: 'pll-corner-cycle', name: 'Ab', alg: "x R2 D2 R U R' D2 R U' R x'", cue: 'Same as Aa, opposite cycle.', why: 'Aa backwards.', related: [{ id: 'pll-aa', how: 'Inverse' }] },
-  { id: 'pll-e', stage: 'pll', family: 'pll-corner-cycle', name: 'E', alg: "x' R U' R' D R U R' D' R U R' D R U' R' D' x", cue: 'No headlights anywhere; edges solved.', why: 'Two corner swaps, each a commutator with D.' },
-  { id: 'pll-y', stage: 'pll', family: 'pll-corner-cycle', name: 'Y', alg: "F R U' R' U' R U R' F' R U R' U' R' F R F'", cue: 'No headlights; two diagonal corners swap.', why: 'First half is an OLL-like trigger set, second half sexy + sledgehammer.', related: [{ id: 'oll-sexy-sledge', how: 'Ends with the same trigger pair' }] },
-  { id: 'pll-v', stage: 'pll', family: 'pll-corner-cycle', name: 'V', alg: "R' U R' U' y R' F' R2 U' R' U R' F R F", cue: 'Diagonal swap with a 2×2 block.', why: 'Diagonal corner swap that also preserves a block.' },
 ];
+
+// ---------------------------------------------------------------- full sets
+
+/** Hand-written explanations for well-known last-layer cases. */
+const LL_TEXT: Record<string, Partial<CaseDef>> = {
+  'oll-27': { cue: 'One corner up (a fish); the other three point the same way.', why: 'R U R′ U carries a corner around; R U2 R′ returns it — three corners twist together.' },
+  'oll-26': { cue: 'Fish pointing the other way.', why: 'Sune played backwards — corners twist the opposite direction.' },
+  'oll-21': { cue: 'No corners up; headlights on two opposite sides.', why: 'A Sune with an extra R U′ R′ U inside — twists all four corners.' },
+  'oll-22': { cue: 'No corners up; headlights on one side only.', why: 'R2 moves swing two corners at once — a compact double Sune.' },
+  'oll-23': { cue: 'Two neighbouring corners up, headlights opposite them.', why: 'D moves hide a corner below while U2 swings the others.' },
+  'oll-24': { cue: 'Two neighbouring corners up, side stickers facing out.', why: 'Wide sexy move, then a sledgehammer: two triggers.' },
+  'oll-25': { cue: 'Two diagonal corners up.', why: 'The chameleon core wrapped in F′ … F.' },
+  'oll-45': { cue: 'A T of yellow; a line of edges.', why: 'F tilts the edges into the R layer, the sexy move flips them, F′ brings them back.' },
+  'oll-44': { cue: 'P shape facing left.', why: 'The wide f also moves the middle layer, so a different pair of edges flips.' },
+  'oll-33': { cue: 'T shape with the bar on the side (a shoe).', why: 'Sexy breaks a pair, sledgehammer re-forms it oriented.' },
+  'oll-37': { cue: 'Fish with an L of edges.', why: 'Hedgeslammer, then a sexy-like trigger: the same two tools in another order.' },
+  'oll-57': { cue: 'All corners up; two opposite edges not.', why: 'Sexy then M′ flips two edges through the middle layer; the rest restores.' },
+  'pll-ua': { cue: 'One solid side; three edges cycle.', why: 'R U R U moves drag three edges around while corners return home.' },
+  'pll-ub': { cue: 'One solid side; edges cycle the other way.', why: 'Ua backwards.' },
+  'pll-h': { cue: 'Every side shows the opposite edge colour.', why: 'M2 swaps two edges through the bottom; twice with U turns swaps both pairs.' },
+  'pll-z': { cue: 'Edges swap with their neighbours.', why: 'M slice swaps edge pairs, U turns pick which ones.' },
+  'pll-t': { cue: 'Headlights on one side, a 2-colour bar opposite.', why: 'Sexy move + sledgehammer pattern swaps two corners and two edges.' },
+  'pll-jb': { cue: 'A 1×3 solid block on one side.', why: 'Swaps the same two corners as T but a different edge pair.' },
+  'pll-ja': { cue: 'Solid block on the other side.', why: 'Left-handed Jb using L moves.' },
+  'pll-aa': { cue: 'Headlights on one side, edges all solved.', why: 'A commutator: move a corner, swap through D2, undo — three corners rotate.' },
+  'pll-ab': { cue: 'Same as Aa, opposite cycle.', why: 'Aa backwards.' },
+  'pll-e': { cue: 'No headlights anywhere; edges solved.', why: 'Two corner swaps, each a commutator with D.' },
+  'pll-y': { cue: 'No headlights; two diagonal corners swap.', why: 'First half is an OLL-like trigger set, second half sexy + sledgehammer.' },
+};
+
+function triggerWhy(alg: string): string {
+  const named = chunkAlg(parseAlg(alg)).filter((c) => c.trigger).map((c) => c.trigger!.name);
+  return named.length ? `Built from: ${Array.from(new Set(named)).join(' → ')}.` : 'Watch which pieces each move carries.';
+}
+
+function llCases(list: typeof OLL, stage: 'oll' | 'pll'): CaseDef[] {
+  return list.map((d) => {
+    const id = stage === 'oll' ? `oll-${d.n}` : `pll-${d.n.toLowerCase()}`;
+    const name = stage === 'oll' ? `OLL ${d.n}${d.name ? ' · ' + d.name : ''}` : `${d.n} perm`;
+    const t = LL_TEXT[id] ?? {};
+    return { id, stage, family: d.family, name, alg: d.alg, cue: t.cue ?? '', why: t.why ?? triggerWhy(d.alg) };
+  });
+}
+
+/** F2L family from the case's geometry (where the two pieces are). */
+function f2lFamily(alg: string): string {
+  const f = f2lFeatures(applyAlg(solvedState(), invertAlg(parseAlg(alg))));
+  if (f.cornerLoc === 'slot' && f.edgeLoc === 'slot') return 'f2l-both-in';
+  if (f.cornerLoc === 'slot') return 'f2l-corner-in';
+  if (f.edgeLoc === 'slot') return 'f2l-edge-in';
+  if (f.whiteFacing === 'up') return 'f2l-white-up';
+  return parseAlg(alg).length <= 4 ? 'f2l-basic' : 'f2l-split';
+}
+
+function buildCases(): CaseDef[] {
+  const out = BASE_CASES.slice();
+  const keyOf = (c: CaseDef) => caseKeyOfAlg(c.stage, parseAlg(c.alg));
+  // complete F2L with generated cases for every placement not covered yet
+  const have = new Set(out.filter((c) => c.stage === 'f2l').map(keyOf));
+  let n = 0;
+  for (const alg of F2L_ALGS) {
+    const k = caseKeyOfAlg('f2l', parseAlg(alg));
+    if (have.has(k)) continue;
+    have.add(k);
+    const family = f2lFamily(alg);
+    n++;
+    out.push({ id: `f2l-x${n}`, stage: 'f2l', family, name: `${FAMILY_BY_TITLE[family]} · ${n}`, alg, cue: '', why: triggerWhy(alg) });
+  }
+  out.push(...llCases(OLL, 'oll'), ...llCases(PLL, 'pll'));
+
+  // automatic relations: inverse and mirror cases
+  const byKey = new Map<string, CaseDef>();
+  for (const c of out) if (c.alg) byKey.set(c.stage + keyOf(c), c);
+  for (const c of out) {
+    if (!c.alg) continue;
+    const rel = (c.related ??= []);
+    const add = (other: CaseDef | undefined, how: string) => {
+      if (other && other.id !== c.id && !rel.some((r) => r.id === other.id)) rel.push({ id: other.id, how });
+    };
+    const moves = parseAlg(c.alg);
+    add(byKey.get(c.stage + caseKeyOfAlg(c.stage, invertAlg(moves))), `Inverse: ${algToString(invertAlg(moves))}`);
+    const mirror = c.stage === 'f2l' ? mirrorFR(moves) : mirrorLR(moves);
+    add(byKey.get(c.stage + caseKeyOfAlg(c.stage, mirror)), `Mirror: ${algToString(mirror)}`);
+  }
+  return out;
+}
+
+const FAMILY_BY_TITLE: Record<string, string> = {
+  'f2l-basic': 'Basic', 'f2l-split': 'Split pair', 'f2l-white-up': 'White up',
+  'f2l-corner-in': 'Corner in', 'f2l-edge-in': 'Edge in', 'f2l-both-in': 'Both in',
+};
+
+export const CASES: CaseDef[] = buildCases();
 
 export const CASE_BY_ID: Record<string, CaseDef> = Object.fromEntries(CASES.map((c) => [c.id, c]));
 export const FAMILY_BY_ID: Record<string, Family> = Object.fromEntries(FAMILIES.map((f) => [f.id, f]));

@@ -7,7 +7,7 @@ import { usePlayer, SPEEDS } from '../ui/usePlayer';
 import { useSolve } from '../ui/useSolve';
 import { Beats, HintLadder, MovePad, ReportCard, Segmented, Timeline, TopBar, MoveList } from '../ui/widgets';
 import { Diagram } from '../ui/Diagram';
-import { Move, applyMove, moveToString, MoveBase, solvedState } from '../cube/cube';
+import { Move, applyMove, moveToString, MoveBase, solvedState, parseAlg } from '../cube/cube';
 import { narrate, Beat, simplify } from '../cube/analysis';
 import { logDiscovery, logExec, markLearned, record } from '../training/store';
 import type { Nav } from '../App';
@@ -183,6 +183,7 @@ function Understand({ view, inst }: { view: CubeView; inst: CaseInstance }) {
           <div className="section-title">The idea</div>
           <div>{fam.idea}</div>
           <div className="muted">{inst.def.why}</div>
+          {inst.def.alts?.map((a) => <MoveList key={a} moves={parseAlg(a)} label="Also works" />)}
         </div>
       )}
     </div>
