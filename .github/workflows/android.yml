@@ -1,0 +1,66 @@
+name: Android APK
+
+# Builds an installable Android app (APK) and publishes it as a GitHub release
+# named "android-latest", so it can be downloaded straight from a phone.
+on:
+  push:
+    branches: [main, master, 'claude/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install and test
+        run: |
+          npm ci
+          npm test
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Create Android project
+        run: |
+          npx cap add android
+          # lock to portrait, like the app's design
+          sed -i 's/<activity /<activity android:screenOrientation="portrait" /' android/app/src/main/AndroidManifest.xml
+          npx cap sync android
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk cfop-coach.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cfop-coach-apk
+          path: cfop-coach.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: CFOP Coach (Android)
+          prerelease: true
+          make_latest: false
+          body: |
+            Latest Android build from `${{ github.ref_name }}` (${{ github.sha }}).
+            Download **cfop-coach.apk** on your phone and open it to install.
+          files: cfop-coach.apk

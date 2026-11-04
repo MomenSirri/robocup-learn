@@ -1,0 +1,7 @@
+{
+  "appId": "com.momensirri.cfopcoach",
+  "appName": "CFOP Coach",
+  "webDir": "dist",
+  "backgroundColor": "#0b0d12",
+  "android": { "backgroundColor": "#0b0d12" }
+}
