@@ -6,16 +6,18 @@ import { Trainer } from './screens/Trainer';
 import { Discover } from './screens/Discover';
 import { Stats } from './screens/Stats';
 import { PllIdentify } from './screens/PllIdentify';
+import { MyPath } from './screens/MyPath';
 import { Stage } from './cube/analysis';
 
 export type Route =
   | { name: 'home' }
   | { name: 'stage'; stage: Stage }
   | { name: 'lesson'; caseId: string }
-  | { name: 'train' }
+  | { name: 'train'; pool?: 'path' }
   | { name: 'discover'; caseId?: string }
   | { name: 'stats' }
-  | { name: 'pll-id' };
+  | { name: 'pll-id' }
+  | { name: 'path' };
 
 export type Tab = 'learn' | 'train' | 'discover' | 'stats';
 
@@ -51,10 +53,11 @@ export function App() {
     case 'home': screen = <Home nav={nav} />; break;
     case 'stage': screen = <StageMap stage={route.stage} nav={nav} />; break;
     case 'lesson': screen = <Lesson caseId={route.caseId} nav={nav} />; break;
-    case 'train': screen = <Trainer nav={nav} />; break;
+    case 'train': screen = <Trainer nav={nav} initialPool={route.pool} />; break;
     case 'discover': screen = <Discover nav={nav} caseId={route.caseId} />; break;
     case 'stats': screen = <Stats nav={nav} />; break;
     case 'pll-id': screen = <PllIdentify nav={nav} />; break;
+    case 'path': screen = <MyPath nav={nav} />; break;
   }
 
   const tabs: { id: Tab; label: string; icon: string }[] = [

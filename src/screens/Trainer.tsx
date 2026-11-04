@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CubeStage } from '../ui/CubeStage';
 import { CubeView } from '../three/CubeView';
-import { CASES, CaseDef, FAMILY_BY_ID, familiesOf } from '../content/cases';
+import { CASES, CASE_BY_ID, CaseDef, FAMILY_BY_ID, familiesOf } from '../content/cases';
+import { PATH_CASE_IDS, PATH_LABEL } from '../content/path';
 import { CaseInstance, keyPieces, makeCase, randomAuf, stickerMask } from '../content/caseState';
-import { logAnswer, logExec, optionsFor, pickNext, logMistake } from '../training/store';
+import { logAnswer, logExec, optionsFor, pickNext, logMistake, isKnown } from '../training/store';
 import { Diagram } from '../ui/Diagram';
 import { HintLadder, MovePad, Segmented, TopBar, MoveList } from '../ui/widgets';
 import { useSolve } from '../ui/useSolve';
 import { Stage, simplify } from '../cube/analysis';
 import type { Nav } from '../App';
 
-type Pool = 'f2l' | 'oll' | 'pll' | 'all';
+type Pool = 'f2l' | 'oll' | 'pll' | 'all' | 'path';
 type Ask = 'case' | 'idea';
 type Phase = 'recognise' | 'feedback' | 'execute';
 
@@ -18,9 +19,9 @@ type Phase = 'recognise' | 'feedback' | 'execute';
  * Recognition trainer: a random case appears, you identify it (or its idea)
  * as fast as you can, then optionally execute it. Hard cases come back more.
  */
-export function Trainer({ nav }: { nav: Nav }) {
+export function Trainer({ nav, initialPool }: { nav: Nav; initialPool?: Pool }) {
   const [view, setView] = useState<CubeView | null>(null);
-  const [pool, setPool] = useState<Pool>('f2l');
+  const [pool, setPool] = useState<Pool>(initialPool ?? 'f2l');
   const [ask, setAsk] = useState<Ask>('case');
   const [inst, setInst] = useState<CaseInstance | null>(null);
   const [phase, setPhase] = useState<Phase>('recognise');
@@ -30,7 +31,16 @@ export function Trainer({ nav }: { nav: Nav }) {
   const shownAt = useRef(0);
   const [hintsUsed, setHintsUsed] = useState(0);
 
-  const cases = useMemo(() => CASES.filter((c) => c.alg && (pool === 'all' ? c.stage !== 'cross' : c.stage === pool)), [pool]);
+  const cases = useMemo(() => {
+    if (pool === 'path') {
+      // what you know plus the next one to learn
+      const list = PATH_CASE_IDS.map((id) => CASE_BY_ID[id]);
+      const known = list.filter((c) => isKnown(c.id));
+      const next = list.find((c) => !isKnown(c.id));
+      return next ? [...known, next] : known.length ? known : list;
+    }
+    return CASES.filter((c) => c.alg && (pool === 'all' ? c.stage !== 'cross' : c.stage === pool));
+  }, [pool]);
 
   const next = useCallback(() => {
     const def = pickNext(cases, inst?.def.id);
@@ -60,9 +70,9 @@ export function Trainer({ nav }: { nav: Nav }) {
 
   const options: { id: string; label: string; def?: CaseDef }[] = useMemo(() => {
     if (!inst) return [];
-    if (ask === 'case') return optionsFor(inst.def).map((c) => ({ id: c.id, label: c.name, def: c }));
+    if (ask === 'case') return optionsFor(inst.def, 4, pool === 'path' ? PATH_CASE_IDS.map((id) => CASE_BY_ID[id]) : undefined).map((c) => ({ id: c.id, label: pool === 'path' ? PATH_LABEL[c.id] ?? c.name : c.name, def: c }));
     return familiesOf(inst.def.stage).map((f) => ({ id: f.id, label: `${f.glyph} ${f.title}` }));
-  }, [inst, ask]);
+  }, [inst, ask, pool]);
 
   const choose = (id: string) => {
     if (!inst || phase !== 'recognise') return;
@@ -102,7 +112,7 @@ export function Trainer({ nav }: { nav: Nav }) {
         right={pool === 'pll' ? <button className="chip" onClick={() => nav.push({ name: 'pll-id' })}>Which PLL?</button> : <button className="chip" onClick={() => nav.tab('stats')}>Stats</button>}
       />
       <div className="trainer-config">
-        <Segmented<Pool> value={pool} onChange={setPool} options={[{ id: 'f2l', label: 'F2L' }, { id: 'oll', label: 'OLL' }, { id: 'pll', label: 'PLL' }, { id: 'all', label: 'Mix' }]} />
+        <Segmented<Pool> value={pool} onChange={setPool} options={[{ id: 'f2l', label: 'F2L' }, { id: 'oll', label: 'OLL' }, { id: 'pll', label: 'PLL' }, { id: 'all', label: 'Mix' }, { id: 'path', label: 'Path' }]} />
         <Segmented<Ask> value={ask} onChange={setAsk} options={[{ id: 'case', label: 'Name it' }, { id: 'idea', label: 'Idea' }]} />
       </div>
       <CubeStage onReady={setView}>

@@ -32,13 +32,15 @@ export interface Progress {
   days: DayStat[];
   mistakes: Record<string, number>; // mistake kind → count
   discoveries: { caseId: string; moves: number; ref: number; at: number }[];
+  /** algorithms the learner says they already know (My path) */
+  known: Record<string, boolean>;
 }
 
 const KEY = 'cfop-coach/progress/v1';
 const N_KEEP = 20;
 
 function empty(): Progress {
-  return { cases: {}, days: [], mistakes: {}, discoveries: [] };
+  return { cases: {}, days: [], mistakes: {}, discoveries: [], known: {} };
 }
 
 let cache: Progress | null = null;
@@ -148,6 +150,15 @@ export function markLearned(caseId: string) {
   save();
 }
 
+export function isKnown(id: string) {
+  return !!load().known[id];
+}
+
+export function setKnown(id: string, v: boolean) {
+  load().known[id] = v;
+  save();
+}
+
 export function resetProgress() {
   cache = empty();
   save();
@@ -193,8 +204,8 @@ export function pickNext(pool: CaseDef[], lastId?: string): CaseDef {
 }
 
 /** Answer options: the right case plus look-alikes (same family, past confusions). */
-export function optionsFor(target: CaseDef, n = 4): CaseDef[] {
-  const sameStage = CASES.filter((c) => c.stage === target.stage && c.id !== target.id && c.alg);
+export function optionsFor(target: CaseDef, n = 4, within?: CaseDef[]): CaseDef[] {
+  const sameStage = (within ?? CASES).filter((c) => c.stage === target.stage && c.id !== target.id && c.alg);
   const r = load().cases[target.id];
   const confused = Object.entries(r?.confusedWith ?? {}).sort((a, b) => b[1] - a[1]).map(([id]) => id);
   const ranked = sameStage

@@ -140,6 +140,9 @@ Key decisions:
 - [x] Progress dashboard
 - [x] PWA shell, unit tests (cube model, content validity, analysis)
 
+- [x] **My path**: the 2-look last layer (16 algorithms in 4 steps) with "I know this" ticks, the next algorithm to learn, computer-checked holding tips and a path-only drill
+- [x] **Which PLL?**: identify a PLL by entering 6 stickers from a real cube
+
 ### Phase 2: deeper understanding
 - Back-slot F2L variants (solving into the other three slots without rotating)
 - "Setup move" lessons: show explicitly how a U/y setup turns an unfamiliar case into a known one (a side-by-side transform animation)

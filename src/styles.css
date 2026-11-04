@@ -183,7 +183,7 @@ button:disabled { cursor: default; }
 .stat-k { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* trainer */
-.trainer-config { display: flex; gap: 8px; padding: 0 12px 4px; }
+.trainer-config { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 4px; }
 .trainer-config .segmented { flex: 1; }
 .feedback { display: flex; flex-direction: column; gap: 10px; }
 .feedback-head { display: flex; gap: 12px; align-items: center; }
@@ -229,3 +229,22 @@ button:disabled { cursor: default; }
 .guide-step { font-size: 14px; }
 .guide-branch { display: grid; gap: 8px; font-size: 13px; }
 .guide-branch > div { background: #10131a; border-radius: 12px; padding: 10px; border-left: 3px solid var(--accent); }
+
+/* My path */
+.home-path { margin: 0; }
+.path-summary .path-count { font-size: 15px; }
+.path-summary .path-count b { font-size: 26px; color: var(--accent); }
+.step-how { font-size: 13px; background: #10131a; border-radius: 10px; padding: 8px 10px; margin: 10px 0; }
+.path-step.complete { border: 1px solid color-mix(in srgb, var(--good) 45%, transparent); }
+.path-step.complete .glyph { color: var(--good); }
+.path-items { display: flex; flex-direction: column; gap: 8px; }
+.path-item { display: flex; align-items: stretch; gap: 6px; background: #10131a; border-radius: 14px; border: 1px solid transparent; }
+.path-item.is-next { border-color: var(--accent); }
+.path-item.known { opacity: 0.85; }
+.path-item-main { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 8px; }
+.path-item-main .grow { gap: 3px; min-width: 0; }
+.path-item-name { font-weight: 650; display: flex; align-items: center; gap: 6px; }
+.next-pill { margin-left: 0; background: var(--accent); color: #0b0d12; font-weight: 700; }
+.know { width: 52px; flex-shrink: 0; border-left: 1px solid var(--line); font-size: 22px; color: var(--good); display: grid; place-items: center; }
+.know:not(.on)::after { content: ''; width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--muted); }
+.know.on { background: color-mix(in srgb, var(--good) 14%, transparent); border-radius: 0 14px 14px 0; }

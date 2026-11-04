@@ -8,6 +8,8 @@ import { makeCase } from '../content/caseState';
 import { CASE_BY_ID } from '../content/cases';
 import { applyAlg, solvedState, parseAlg } from '../cube/cube';
 import type { Nav } from '../App';
+import { pathProgress } from './MyPath';
+import { PATH_LABEL } from '../content/path';
 
 export function useProgress() {
   useSyncExternalStore(subscribe, version, version);
@@ -62,6 +64,7 @@ export function Home({ nav }: { nav: Nav }) {
         }}
       />
       <div className="sheet">
+        <PathCard nav={nav} />
         <div className="path">
           {STAGES.map((s, i) => (
             <button key={s.id} className="path-node" onClick={() => nav.push({ name: 'stage', stage: s.id })}>
@@ -97,5 +100,19 @@ export function Home({ nav }: { nav: Nav }) {
         )}
       </div>
     </div>
+  );
+}
+
+function PathCard({ nav }: { nav: Nav }) {
+  const { known, total, next } = pathProgress();
+  return (
+    <button className="tool-card home-path" onClick={() => nav.push({ name: 'path' })}>
+      <Ring value={known / total} color="var(--accent)" />
+      <div>
+        <div className="family-title">My path · 2-look</div>
+        <div className="family-idea">{known}/{total} learned{next ? ` · next: ${PATH_LABEL[next]}` : ' · all done!'}</div>
+      </div>
+      <span className="chev">›</span>
+    </button>
   );
 }
