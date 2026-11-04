@@ -53,3 +53,16 @@ describe('curriculum content', () => {
     expect(r.cancellations).toBe(2);
   });
 });
+
+describe('setup moves', () => {
+  it('simplified setup from solved reproduces every case', async () => {
+    const { simplify } = await import('../src/cube/analysis');
+    const { solvedState, matEq } = await import('../src/cube/cube');
+    for (const c of CASES.filter((x) => x.alg))
+      for (let auf = 0; auf < 4; auf++) {
+        const inst = makeCase(c, auf);
+        const s = applyAlg(solvedState(), simplify(inst.setup));
+        expect(s.every((m, i) => matEq(m, inst.start[i])), c.id).toBe(true);
+      }
+  });
+});

@@ -7,8 +7,8 @@ import { usePlayer, SPEEDS } from '../ui/usePlayer';
 import { useSolve } from '../ui/useSolve';
 import { Beats, HintLadder, MovePad, ReportCard, Segmented, Timeline, TopBar, MoveList } from '../ui/widgets';
 import { Diagram } from '../ui/Diagram';
-import { Move, applyMove, moveToString, MoveBase } from '../cube/cube';
-import { narrate, Beat } from '../cube/analysis';
+import { Move, applyMove, moveToString, MoveBase, solvedState } from '../cube/cube';
+import { narrate, Beat, simplify } from '../cube/analysis';
 import { logDiscovery, logExec, markLearned, record } from '../training/store';
 import type { Nav } from '../App';
 
@@ -97,6 +97,22 @@ function Recognise({ view, inst, onAngle, nav }: { view: CubeView; inst: CaseIns
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ghost, view, inst]);
   const cues = recognitionCue(inst);
+  const setup = useMemo(() => simplify(inst.setup), [inst]);
+  const [settingUp, setSettingUp] = useState(false);
+  const playSetup = async () => {
+    if (settingUp) return;
+    setSettingUp(true);
+    view.setFocus(null);
+    view.setHighlight([]);
+    view.setGhosts(null);
+    view.jump(solvedState());
+    await new Promise((r) => setTimeout(r, 500));
+    for (const m of setup) await view.animate(m, 300);
+    view.setFocus(keys);
+    view.setHighlight(keys);
+    if (ghost) view.setGhosts(keys);
+    setSettingUp(false);
+  };
   return (
     <div className="recognise">
       <div className="row">
@@ -105,6 +121,11 @@ function Recognise({ view, inst, onAngle, nav }: { view: CubeView; inst: CaseIns
           {cues.map((c) => <div key={c} className="cue">{c}</div>)}
         </div>
       </div>
+      <div className="setup">
+        <MoveList moves={setup} label="Set up from solved" />
+        <button className="chip" onClick={playSetup} disabled={settingUp}>{settingUp ? 'Playing…' : '▶ Show'}</button>
+      </div>
+      <div className="note">Hold the cube with yellow on top and green in front, then do these moves on a solved cube to get this case.</div>
       <div className="row buttons">
         <button className={'chip' + (ghost ? ' on' : '')} onClick={() => setGhost(!ghost)}>◌ Where they go</button>
         <button className="chip" onClick={onAngle}>⟳ Another angle</button>

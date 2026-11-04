@@ -7,7 +7,7 @@ import { useSolve } from '../ui/useSolve';
 import { HintLadder, MovePad, MoveList, ReportCard, Segmented, TopBar } from '../ui/widgets';
 import { logDiscovery } from '../training/store';
 import { crossDistance } from '../cube/crossSolver';
-import { Stage } from '../cube/analysis';
+import { Stage, simplify } from '../cube/analysis';
 import type { Nav } from '../App';
 
 type Kind = 'cross' | 'f2l' | 'oll' | 'pll';
@@ -64,6 +64,7 @@ export function Discover({ nav, caseId }: { nav: Nav; caseId?: string }) {
           </>
         ) : (
           <>
+            <MoveList moves={simplify(inst.setup)} label="Set up from solved" />
             <div className="solve-status">
               <MoveList moves={s.moves} label="Your moves" />
               <button className="chip" onClick={s.reset}>Reset</button>

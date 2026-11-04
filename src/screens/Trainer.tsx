@@ -7,7 +7,7 @@ import { logAnswer, logExec, optionsFor, pickNext, logMistake } from '../trainin
 import { Diagram } from '../ui/Diagram';
 import { HintLadder, MovePad, Segmented, TopBar, MoveList } from '../ui/widgets';
 import { useSolve } from '../ui/useSolve';
-import { Stage } from '../cube/analysis';
+import { Stage, simplify } from '../cube/analysis';
 import type { Nav } from '../App';
 
 type Pool = 'f2l' | 'oll' | 'pll' | 'all';
@@ -166,6 +166,7 @@ function Feedback({ inst, ok, answerId, ask, ms, onNext, onExecute }: { inst: Ca
       )}
       {!ok && <div className="beat info">Look for: {inst.def.stage === 'f2l' ? fam.idea : inst.def.cue}</div>}
       <MoveList moves={inst.solution} label="Solution" />
+      <MoveList moves={simplify(inst.setup)} label="Set up from solved" />
       <div className="row buttons">
         <button className="chip" onClick={onExecute}>Execute it</button>
         <button className="cta" onClick={onNext}>Next →</button>
