@@ -2,9 +2,10 @@ name: Web app (GitHub Pages)
 
 # Publishes the app as an installable web app (PWA). On iPhone: open the
 # site in Safari → Share → Add to Home Screen.
-# Manual only for now: it publishes a public website, so it runs only when
-# started from the Actions tab (Run workflow).
+# Approved by the owner: every push updates the public site.
 on:
+  push:
+    branches: [main, master, 'claude/**']
   workflow_dispatch:
 
 permissions:
