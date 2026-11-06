@@ -263,3 +263,14 @@ button:disabled { cursor: default; }
 .map-answer { color: #c3c9d6; }
 
 .scheme { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+
+/* group by algorithm */
+.group-switch { display: flex; align-items: center; gap: 8px; padding: 4px 12px 0; }
+.group-switch .segmented { flex: 1; }
+.alg-intro { padding: 8px 16px 0; }
+.alg-members { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.alg-member { display: flex; gap: 10px; align-items: flex-start; text-align: left; background: #10131a; border-radius: 14px; padding: 8px; }
+.alg-member .grow { gap: 4px; min-width: 0; }
+.alg-name { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.step-no { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--line); font-size: 11px; font-weight: 700; }
+.mv.small.shared { background: color-mix(in srgb, var(--accent) 35%, var(--card)); color: var(--text); }

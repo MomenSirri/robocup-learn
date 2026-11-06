@@ -73,11 +73,11 @@ export function HintLadder({ level, onNext }: { level: HintLevel; onNext: () => 
   );
 }
 
-export function MoveList({ moves, label }: { moves: Move[]; label?: string }) {
+export function MoveList({ moves, label, highlight }: { moves: Move[]; label?: string; highlight?: [number, number] }) {
   return (
     <div className="movelist">
       {label && <span className="movelist-label">{label}</span>}
-      {moves.length ? moves.map((m, i) => <span key={i} className="mv small">{moveToString(m)}</span>) : <span className="muted">—</span>}
+      {moves.length ? moves.map((m, i) => <span key={i} className={'mv small' + (highlight && i >= highlight[0] && i < highlight[1] ? ' shared' : '')}>{moveToString(m)}</span>) : <span className="muted">—</span>}
     </div>
   );
 }

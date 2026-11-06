@@ -1,4 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { AlgGroupsView } from './AlgGroups';
+import { Segmented } from '../ui/widgets';
 import { STAGES, familiesOf, casesOf } from '../content/cases';
 import { Stage } from '../cube/analysis';
 import { Diagram } from '../ui/Diagram';
@@ -15,6 +17,7 @@ export function StageMap({ stage, nav }: { stage: Stage; nav: Nav }) {
   const fams = familiesOf(stage);
   const starts = useMemo(() => Object.fromEntries(fams.flatMap((f) => casesOf(f.id)).map((c) => [c.id, makeCase(c).start])), [fams]);
   const p = load();
+  const [view, setView] = useState<'idea' | 'alg'>('idea');
   return (
     <div className="screen scroll">
       <TopBar title={meta.title} onBack={nav.back} />
@@ -46,6 +49,13 @@ export function StageMap({ stage, nav }: { stage: Stage; nav: Nav }) {
           <span className="chev">›</span>
         </button>
       )}
+      {stage === 'pll' && (
+        <div className="group-switch">
+          <span className="small muted">Group by</span>
+          <Segmented<'idea' | 'alg'> value={view} onChange={setView} options={[{ id: 'idea', label: 'How it looks' }, { id: 'alg', label: 'Similar algorithm' }]} />
+        </div>
+      )}
+      {view === 'alg' ? <AlgGroupsView stage={stage} nav={nav} /> : (<>
       {fams.map((f) => (
         <section key={f.id} className="family">
           <div className="family-head">
@@ -73,6 +83,7 @@ export function StageMap({ stage, nav }: { stage: Stage; nav: Nav }) {
           </div>
         </section>
       ))}
+      </>)}
     </div>
   );
 }
