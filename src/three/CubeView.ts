@@ -4,14 +4,15 @@ import {
   CUBIES, CUBIE_BY_ID, CubeState, Move, MoveBase, MOVE_DEFS, Mat, Vec, Face,
   applyMove, layerMembers, quarterTurns, solvedState, frame,
 } from '../cube/cube';
+import { faceHexNumber } from '../ui/scheme';
 
 export const COLORS: Record<Face, number> = {
-  U: 0xffd23f,
-  D: 0xf5f5f0,
-  F: 0x15b85a,
-  B: 0x2563eb,
-  R: 0xe0303d,
-  L: 0xff7a1a,
+  U: faceHexNumber('U'),
+  D: faceHexNumber('D'),
+  F: faceHexNumber('F'),
+  B: faceHexNumber('B'),
+  R: faceHexNumber('R'),
+  L: faceHexNumber('L'),
 };
 const GREY = 0x3b4150;
 const BODY = 0x0d0f14;

@@ -6,11 +6,14 @@ import { FAMILY_BY_ID } from '../content/cases';
 import { TwoSideView, RecogSteps, SIDE_HEX, SIDE_NAME } from '../ui/TwoSideView';
 import { explain } from '../training/pllRecog';
 import { parseAlg } from '../cube/cube';
+import { scheme, setScheme } from '../ui/scheme';
 import type { Nav } from '../App';
 
 const HEX = SIDE_HEX;
 const NAME = SIDE_NAME;
 const YELLOW = '#ffd23f';
+const ORDER = ['Red', 'Green', 'Orange', 'Blue'];
+const PALETTE = (['F', 'R', 'B', 'L'] as SideColour[]).sort((a, b) => ORDER.indexOf(SIDE_NAME[a]) - ORDER.indexOf(SIDE_NAME[b]));
 
 /**
  * "Which PLL do I have?" Enter the 6 side stickers of the top layer that you
@@ -38,17 +41,18 @@ export function PllIdentify({ nav }: { nav: Nav }) {
         <div className="small muted">Hold the cube with <b style={{ color: YELLOW }}>yellow on top</b>. Look at the <b>top row</b> of the front side and the right side, and tap in the 6 colours you see.</div>
         <TwoSideView colours={cells} selected={sel} onTap={setSel} numbers />
         <div className="palette">
-          {(['R', 'F', 'L', 'B'] as SideColour[]).map((c) => (
+          {PALETTE.map((c) => (
             <button key={c} className="swatch" style={{ background: HEX[c] }} onClick={() => set(c)} aria-label={NAME[c]}>{NAME[c]}</button>
           ))}
           <button className="swatch clear" onClick={() => set(null)}>Clear</button>
         </div>
         {filled > 0 && <button className="chip" onClick={() => { setCells([null, null, null, null, null, null]); setSel(0); }}>Start over</button>}
+        <SchemePicker />
       </div>
 
       {filled > 0 && (
         <section className="card">
-          {cases.length === 0 && <div className="beat warn">No case matches these colours. Check them again: orange and red are easy to mix up.</div>}
+          {cases.length === 0 && <div className="beat warn">No case matches these colours. Check them again: orange and red are easy to mix up. Also check the colour setting above: hold yellow on top and green in front. Which colour is on the right of your cube?</div>}
           {cases.length === 1 && <Answer entries={found} nav={nav} colours={filled === 6 ? (cells as SideColour[]) : null} />}
           {cases.length > 1 && (
             <>
@@ -126,5 +130,19 @@ function Guide() {
       </div>
       <div className="guide-step muted small">Tip: you only need two sides. Look at the front and right; the colours there decide the case. The tool above uses the same trick.</div>
     </section>
+  );
+}
+
+/** Cubes differ: with yellow on top and green in front, most have orange on the right. */
+export function SchemePicker() {
+  const sc = scheme();
+  return (
+    <div className="scheme">
+      <div className="small muted">Your cube: hold <b>yellow on top</b> and <b>green in front</b>. Which colour is on the <b>right</b>?</div>
+      <div className="segmented">
+        <button className={sc === 'standard' ? 'on' : ''} onClick={() => sc !== 'standard' && setScheme('standard')}>Orange (most cubes)</button>
+        <button className={sc === 'mirrored' ? 'on' : ''} onClick={() => sc !== 'mirrored' && setScheme('mirrored')}>Red</button>
+      </div>
+    </div>
   );
 }

@@ -261,3 +261,5 @@ button:disabled { cursor: default; }
 .map-row:last-child { border-bottom: 0; }
 .map-look { display: flex; flex-wrap: wrap; gap: 4px; font-weight: 600; }
 .map-answer { color: #c3c9d6; }
+
+.scheme { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }

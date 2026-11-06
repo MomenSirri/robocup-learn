@@ -5,6 +5,7 @@ import { Diagram } from '../ui/Diagram';
 import { makeCase } from '../content/caseState';
 import { Stat, TopBar } from '../ui/widgets';
 import type { Nav } from '../App';
+import { SchemePicker } from './PllIdentify';
 
 function Spark({ values, color, max }: { values: number[]; color: string; max?: number }) {
   if (values.length < 2) return <div className="muted small">Train on a few days to see a trend.</div>;
@@ -100,6 +101,11 @@ export function Stats({ nav }: { nav: Nav }) {
         {p.discoveries.length > 0 && (
           <div className="muted small">Self-found solutions: {p.discoveries.length} · avg {(avg(p.discoveries.map((d) => d.moves - d.ref))).toFixed(1)} moves over reference</div>
         )}
+      </section>
+
+      <section className="card">
+        <div className="section-title">Cube colours</div>
+        <SchemePicker />
       </section>
 
       <button className="chip danger" onClick={() => confirm('Reset all progress?') && resetProgress()}>Reset progress</button>

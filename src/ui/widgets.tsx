@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Move, MoveBase, moveToString } from '../cube/cube';
 import { Beat, Chunk, SolutionReport } from '../cube/analysis';
 import { HINT_LABELS, HintLevel } from '../training/goals';
+import { faceHex } from './scheme';
 
-const FACE_TINT: Record<string, string> = { U: '#ffd23f', D: '#f5f5f0', F: '#15b85a', B: '#2563eb', R: '#e0303d', L: '#ff7a1a', M: '#94a3b8', E: '#94a3b8', S: '#94a3b8', x: '#64748b', y: '#64748b', z: '#64748b' };
+const FACE_TINT: Record<string, string> = { U: faceHex('U'), D: faceHex('D'), F: faceHex('F'), B: faceHex('B'), R: faceHex('R'), L: faceHex('L'), M: '#94a3b8', E: '#94a3b8', S: '#94a3b8', x: '#64748b', y: '#64748b', z: '#64748b' };
 
 export function MovePad({ onMove, onUndo, compact }: { onMove: (m: Move) => void; onUndo?: () => void; compact?: boolean }) {
   const [prime, setPrime] = useState(false);

@@ -1,7 +1,8 @@
 import { CubeState, Face, Vec, facelets, faceletAt, FIRST_TWO_LAYERS, CUBIES, relPos, frame } from '../cube/cube';
 import { Stage } from '../cube/analysis';
+import { faceHex } from './scheme';
 
-const HEX: Record<Face, string> = { U: '#ffd23f', D: '#f5f5f0', F: '#15b85a', B: '#2563eb', R: '#e0303d', L: '#ff7a1a' };
+const HEX: Record<Face, string> = { U: faceHex('U'), D: faceHex('D'), F: faceHex('F'), B: faceHex('B'), R: faceHex('R'), L: faceHex('L') };
 const GREY = '#3b4150';
 
 /** Compact 2D case picture: top view for last layer, isometric for F2L/cross. */

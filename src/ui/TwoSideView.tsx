@@ -1,8 +1,9 @@
 import { SideColour } from '../training/pllId';
+import { faceHex, faceName } from './scheme';
 import { Explanation, PATTERN_TEXT, RELATION_TEXT, STICKER_LABEL } from '../training/pllRecog';
 
-export const SIDE_HEX: Record<SideColour, string> = { F: '#15b85a', R: '#e0303d', B: '#2563eb', L: '#ff7a1a' };
-export const SIDE_NAME: Record<SideColour, string> = { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' };
+export const SIDE_HEX: Record<SideColour, string> = { F: faceHex('F'), R: faceHex('R'), B: faceHex('B'), L: faceHex('L') };
+export const SIDE_NAME: Record<SideColour, string> = { F: faceName('F'), R: faceName('R'), B: faceName('B'), L: faceName('L') };
 const YELLOW = '#ffd23f';
 const EMPTY = '#2a3040';
 
