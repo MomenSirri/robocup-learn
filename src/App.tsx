@@ -7,6 +7,7 @@ import { Discover } from './screens/Discover';
 import { Stats } from './screens/Stats';
 import { PllIdentify } from './screens/PllIdentify';
 import { MyPath } from './screens/MyPath';
+import { Pll2Side } from './screens/Pll2Side';
 import { Stage } from './cube/analysis';
 
 export type Route =
@@ -17,7 +18,8 @@ export type Route =
   | { name: 'discover'; caseId?: string }
   | { name: 'stats' }
   | { name: 'pll-id' }
-  | { name: 'path' };
+  | { name: 'path' }
+  | { name: 'pll-2side' };
 
 export type Tab = 'learn' | 'train' | 'discover' | 'stats';
 
@@ -58,6 +60,7 @@ export function App() {
     case 'stats': screen = <Stats nav={nav} />; break;
     case 'pll-id': screen = <PllIdentify nav={nav} />; break;
     case 'path': screen = <MyPath nav={nav} />; break;
+    case 'pll-2side': screen = <Pll2Side nav={nav} />; break;
   }
 
   const tabs: { id: Tab; label: string; icon: string }[] = [

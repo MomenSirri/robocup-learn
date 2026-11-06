@@ -3,21 +3,14 @@ import { TopBar, MoveList } from '../ui/widgets';
 import { Diagram } from '../ui/Diagram';
 import { identify, distinctCases, preMove, SideColour, Entry } from '../training/pllId';
 import { FAMILY_BY_ID } from '../content/cases';
+import { TwoSideView, RecogSteps, SIDE_HEX, SIDE_NAME } from '../ui/TwoSideView';
+import { explain } from '../training/pllRecog';
 import { parseAlg } from '../cube/cube';
 import type { Nav } from '../App';
 
-const HEX: Record<SideColour, string> = { F: '#15b85a', R: '#e0303d', B: '#2563eb', L: '#ff7a1a' };
-const NAME: Record<SideColour, string> = { F: 'Green', R: 'Red', B: 'Blue', L: 'Orange' };
+const HEX = SIDE_HEX;
+const NAME = SIDE_NAME;
 const YELLOW = '#ffd23f';
-const EMPTY = '#2a3040';
-
-// isometric projection of the top layer (front face on the left, right face on the right)
-const P = (x: number, y: number, z: number) => [(x - z) * 0.866 * 30, ((x + z) * 0.5 - y) * 30];
-function quad(c: number[], du: number[], dv: number[], s = 0.44) {
-  return [[-1, -1], [1, -1], [1, 1], [-1, 1]]
-    .map(([a, b]) => P(c[0] + du[0] * a * s + dv[0] * b * s, c[1] + du[1] * a * s + dv[1] * b * s, c[2] + du[2] * a * s + dv[2] * b * s).join(','))
-    .join(' ');
-}
 
 /**
  * "Which PLL do I have?" Enter the 6 side stickers of the top layer that you
@@ -37,36 +30,13 @@ export function PllIdentify({ nav }: { nav: Nav }) {
     if (c && sel < 5) setSel(sel + 1);
   };
 
-  const stickers = [
-    // front: x = -1..1 at z = 1.5, top row y = 1
-    ...[-1, 0, 1].map((x) => quad([x, 1, 1.5], [1, 0, 0], [0, 1, 0])),
-    // right: z = 1..-1 at x = 1.5
-    ...[1, 0, -1].map((z) => quad([1.5, 1, z], [0, 0, -1], [0, 1, 0])),
-  ];
 
   return (
     <div className="screen scroll pll-id">
       <TopBar title={<><div className="tb-main">Which PLL?</div><div className="tb-sub">Read it from your own cube</div></>} onBack={nav.canBack ? nav.back : undefined} />
       <div className="card">
         <div className="small muted">Hold the cube with <b style={{ color: YELLOW }}>yellow on top</b>. Look at the <b>top row</b> of the front side and the right side, and tap in the 6 colours you see.</div>
-        <svg viewBox="-100 -96 200 204" className="pll-input" role="group" aria-label="Top layer stickers">
-          {[-1, 0, 1].flatMap((x) => [-1, 0, 1].map((z) => <polygon key={`t${x}${z}`} points={quad([x, 1.5, z], [1, 0, 0], [0, 0, 1])} fill={YELLOW} stroke="#05060a" strokeWidth={2} />))}
-          {[-1, 0, 1].flatMap((x) => [0, -1].map((y) => <polygon key={`f${x}${y}`} points={quad([x, y, 1.5], [1, 0, 0], [0, 1, 0])} fill="#1b202b" stroke="#05060a" strokeWidth={2} />))}
-          {[1, 0, -1].flatMap((z) => [0, -1].map((y) => <polygon key={`r${z}${y}`} points={quad([1.5, y, z], [0, 0, -1], [0, 1, 0])} fill="#1b202b" stroke="#05060a" strokeWidth={2} />))}
-          {stickers.map((pts, i) => (
-            <polygon
-              key={i}
-              points={pts}
-              fill={cells[i] ? HEX[cells[i]!] : EMPTY}
-              stroke={i === sel ? '#ffffff' : '#05060a'}
-              strokeWidth={i === sel ? 4 : 2}
-              className="tap"
-              onClick={() => setSel(i)}
-            />
-          ))}
-          <text x={-62} y={104} className="svg-label">FRONT</text>
-          <text x={32} y={104} className="svg-label">RIGHT</text>
-        </svg>
+        <TwoSideView colours={cells} selected={sel} onTap={setSel} numbers />
         <div className="palette">
           {(['R', 'F', 'L', 'B'] as SideColour[]).map((c) => (
             <button key={c} className="swatch" style={{ background: HEX[c] }} onClick={() => set(c)} aria-label={NAME[c]}>{NAME[c]}</button>
@@ -79,7 +49,7 @@ export function PllIdentify({ nav }: { nav: Nav }) {
       {filled > 0 && (
         <section className="card">
           {cases.length === 0 && <div className="beat warn">No case matches these colours. Check them again: orange and red are easy to mix up.</div>}
-          {cases.length === 1 && <Answer entries={found} nav={nav} />}
+          {cases.length === 1 && <Answer entries={found} nav={nav} colours={filled === 6 ? (cells as SideColour[]) : null} />}
           {cases.length > 1 && (
             <>
               <div className="section-title">{cases.length} possible · add more stickers</div>
@@ -104,7 +74,7 @@ export function PllIdentify({ nav }: { nav: Nav }) {
   );
 }
 
-function Answer({ entries, nav }: { entries: Entry[]; nav: Nav }) {
+function Answer({ entries, nav, colours }: { entries: Entry[]; nav: Nav; colours: SideColour[] | null }) {
   const e = entries[0];
   if (!e.def) {
     return <div className="beat good">Your last layer is already solved. Just turn the top until it lines up.</div>;
@@ -125,7 +95,14 @@ function Answer({ entries, nav }: { entries: Entry[]; nav: Nav }) {
         <li>Do the algorithm: <MoveList moves={parseAlg(e.def.alg)} /></li>
         <li>Turn the top until everything lines up</li>
       </ol>
+      {colours && (
+        <>
+          <div className="section-title">How to see it next time</div>
+          <RecogSteps ex={explain(colours)} />
+        </>
+      )}
       <div className="row buttons">
+        <button className="chip" onClick={() => nav.push({ name: 'pll-2side' })}>Practise 2-side</button>
         <button className="cta" onClick={() => nav.push({ name: 'lesson', caseId: e.def!.id })}>Learn {e.def.name.replace(' perm', '')} on the 3D cube</button>
       </div>
     </div>

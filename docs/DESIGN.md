@@ -142,6 +142,7 @@ Key decisions:
 
 - [x] **My path**: the 2-look last layer (16 algorithms in 4 steps) with "I know this" ticks, the next algorithm to learn, computer-checked holding tips and a path-only drill
 - [x] **Which PLL?**: identify a PLL by entering 6 stickers from a real cube
+- [x] **2-side PLL recognition**: read each visible side as one pattern (headlights, block, solved side, no match); the pair names the case or narrows it to 2–3, then at most two sticker comparisons decide. Rules are derived from the real case states and tested for every case, angle and colour. Trainer + full pattern map
 
 ### Phase 2: deeper understanding
 - Back-slot F2L variants (solving into the other three slots without rotating)

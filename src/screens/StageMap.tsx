@@ -36,6 +36,16 @@ export function StageMap({ stage, nav }: { stage: Stage; nav: Nav }) {
           <span className="chev">›</span>
         </button>
       )}
+      {stage === 'pll' && (
+        <button className="tool-card" onClick={() => nav.push({ name: 'pll-2side' })}>
+          <span className="glyph">⚡</span>
+          <div>
+            <div className="family-title">2-side recognition trainer</div>
+            <div className="family-idea">The fast way: read any PLL from just the front and right side, with a step-by-step reason after every answer.</div>
+          </div>
+          <span className="chev">›</span>
+        </button>
+      )}
       {fams.map((f) => (
         <section key={f.id} className="family">
           <div className="family-head">
